@@ -98,6 +98,7 @@ Maximilian Hils:
 
 import sys
 import string
+import re
 
 try:
     if sys.version >= '2.3':
@@ -110,6 +111,9 @@ except ImportError:
     sys.stderr.write("Can't import textwrap module!\n")
     raise
 
+# This is the Regular Expression that represents an ANSI Control Sequence
+isAnsiEscapeSeqRE = re.compile(r"(\x9B|\x1B\[)[0-?]*[ -\/]*[@-~]")
+
 if sys.version >= '2.7':
     from functools import reduce
 
@@ -121,9 +125,14 @@ def len(iterable):
     
     try:
         if sys.version >= '3.0':
-            return len(str)
+            # This line is to remove Ansi Control sequences (used in color input)
+            # before evaluating length.
+            ProcessedStr = re.sub(isAnsiEscapeSeqRE, "", iterable)
+            return len(ProcessedStr)
         else:
-            return len(unicode(iterable, 'utf'))
+            ProcessedStr = unicode(iterable, 'utf')
+            ProcessedStr = re.sub(isAnsiEscapeSeqRE, "", ProcessedIterable)
+            return len(ProcessedStr)
     except:
         return iterable.__len__()
 
